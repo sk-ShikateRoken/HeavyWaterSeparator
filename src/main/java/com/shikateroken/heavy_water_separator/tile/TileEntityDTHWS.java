@@ -1,5 +1,7 @@
 package com.shikateroken.heavy_water_separator.tile;
 
+import com.shikateroken.heavy_water_separator.recipe.FluidToFluidrecipe;
+import com.shikateroken.heavy_water_separator.registry.HwsRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -74,35 +76,48 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
     public void tick() {
         if (level == null || level.isClientSide()) return;
         // 【デバッグ用】1秒（20Tick）に1回だけコンソールに出力する
-        if (level.getGameTime() % 20 == 0) {
-            System.out.println("========== DTHWS Debug ==========");
-            System.out.println("Input Tank : " + inputTank.getFluidAmount() + " mB");
-            if (!inputTank.isEmpty()) {
-                System.out.println("Input Fluid: " + inputTank.getFluid().getTranslationKey());
+//        if (level.getGameTime() % 20 == 0) {
+//            System.out.println("========== DTHWS Debug ==========");
+//            System.out.println("Input Tank : " + inputTank.getFluidAmount() + " mB");
+//            if (!inputTank.isEmpty()) {
+//                System.out.println("Input Fluid: " + inputTank.getFluid().getTranslationKey());
+//            }
+//            System.out.println("Output Tank: " + outputTank.getFluidAmount() + " mB");
+//        }
+
+        // 1. 入力タンクが空なら何もしない（負荷軽減）
+        if (inputTank.isEmpty()) return;
+
+        // 2. 現在の入力タンクの液体に一致するレシピを探す
+        FluidToFluidrecipe currentRecipe = null;
+
+        // 登録されている "fluid_to_fluid" タイプの全レシピを取得してループで確認
+        for (FluidToFluidrecipe recipe : level.getRecipeManager().getAllRecipesFor(HwsRecipes.FLUID_TO_FLUID_TYPE.get())) {
+
+            // ステップ1で作った独自の matches メソッドで、液体の種類と必要量が足りているかチェック
+            if (recipe.getInput().getFluid() == inputTank.getFluid().getFluid() &&
+                    inputTank.getFluidAmount() >= recipe.getInput().getAmount()) {
+                currentRecipe = recipe;
+                break; // 見つかったらループを抜ける
             }
-            System.out.println("Output Tank: " + outputTank.getFluidAmount() + " mB");
         }
 
-        // 入力タンクの液体を減らし、出力タンクの液体を増やす量
-        int processAmount = 100;
-
-        // 入力タンクに十分な水があるかチェック
-        boolean hasInput = inputTank.getFluidAmount() >= processAmount && inputTank.getFluid().getFluid() == Fluids.WATER;
-
-        // 【重要】水がある場合のみ、以下の変換・移動処理を行う
-        if (hasInput) {
-            // 生成する液体を定義（null ではなく、ここで直接宣言して初期化します）
-            FluidStack resultFluid = new FluidStack(Fluids.LAVA, processAmount);
+        // 3. 一致するレシピが見つかった場合の処理
+        if (currentRecipe != null) {
+            // レシピから消費量と生成する液体を取得（copy() で安全に複製する）
+            int consumeAmount = currentRecipe.getInput().getAmount();
+            FluidStack resultFluid = currentRecipe.getOutput().copy();
 
             // 出力タンクに空き容量があるかシミュレート
             int acceptedAmount = outputTank.fill(resultFluid, IFluidHandler.FluidAction.SIMULATE);
 
             // 出力タンクが全量を受け入れられる場合のみ処理を実行
-            if (acceptedAmount == processAmount) {
+            if (acceptedAmount == resultFluid.getAmount()) {
 
-                // 入力タンクから100mB減らす
-                inputTank.drain(processAmount, IFluidHandler.FluidAction.EXECUTE);
-                // 出力タンクに100mB増やす
+                // 入力タンクからレシピの指定量（consumeAmount）を減らす
+                inputTank.drain(consumeAmount, IFluidHandler.FluidAction.EXECUTE);
+
+                // 出力タンクにレシピの指定量（resultFluid）を増やす
                 outputTank.fill(resultFluid, IFluidHandler.FluidAction.EXECUTE);
 
                 // データの変更をゲームに通知
