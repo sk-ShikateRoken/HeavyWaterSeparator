@@ -165,6 +165,7 @@ dependencies {
     implementation fg.deobf("curse.maven:mekanism-tools-268567:6552915")
     compileOnly fg.deobf("curse.maven:jei-238222:6075247")
     runtimeOnly fg.deobf("curse.maven:jei-238222:6075247")
+    implementation fg.deobf("curse.maven:jade-324717:6855440")
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

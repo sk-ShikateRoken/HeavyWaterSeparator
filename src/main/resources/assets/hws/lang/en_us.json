@@ -1,0 +1,6 @@
+{
+  "block.heavy_water_separator": "Distillation type heavy water separator",
+  "item.heavy_water_separator": "Distillation type heavy water separator",
+
+  "config.jade.plugin_heavy_water_separator.dthws_provider": "DTHWS Output Tank"
+}
