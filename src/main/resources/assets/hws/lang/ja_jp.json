@@ -1,5 +1,5 @@
 {
-  "block.heavy_water_separator": "蒸留式重水分離機",
-  "item.heavy_water_separator": "蒸留式重水分離機",
+  "block.heavy_water_separator.dthws": "蒸留式重水分離機",
+  "item.heavy_water_separator.dtwhs": "蒸留式重水分離機",
   "config.jade.plugin_heavy_water_separator.dthws_provider": "DTHWS 出力タンク情報"
 }
