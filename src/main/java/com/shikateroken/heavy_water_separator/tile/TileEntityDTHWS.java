@@ -5,6 +5,8 @@ import com.shikateroken.heavy_water_separator.registry.HwsRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
@@ -20,6 +22,9 @@ import com.shikateroken.heavy_water_separator.Config;
 import com.shikateroken.heavy_water_separator.registry.HwsBlockEntity;
 
 
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,8 +47,14 @@ private final LazyOptional<IEnergyStorage> energyHandler = LazyOptional.of(() ->
 private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> inputTank);
     private final LazyOptional<IFluidHandler> outputHandler = LazyOptional.of(() -> outputTank);
 
+
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+
+        if (cap == ForgeCapabilities.ITEM_HANDLER) {
+            return itemHandler.cast();
+        }
+
         if (cap == ForgeCapabilities.FLUID_HANDLER) {
             // ブロックの「下面(DOWN)」からアクセスされた場合は、出力タンクを返す
             if (side == Direction.DOWN) {
@@ -59,14 +70,45 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         return super.getCapability(cap, side);
     }
 
-    // 両方のハンドラーを無効化するように修正ブロックが破壊されたりアンロードされた際にメモリリークを防ぐための処理
+    public final ItemStackHandler upgradeInventory = new ItemStackHandler(2) {
+        @Override
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+            if (id == null) return false;
+
+            // スロット0はSpeed、スロット1はEnergyアップグレードのみ受け入れる
+            if (slot == 0) return id.toString().equals("mekanism:upgrade_speed");
+            if (slot == 1) return id.toString().equals("mekanism:upgrade_energy");
+            return false;
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return 8; // Mekanismのアップグレードは最大8枚まで
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
+
+    private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> upgradeInventory);
+
+    // 2. 処理時間（プログレス）用の変数
+    public int progress = 0;
+    public int maxProgress = 100; // 基本の処理時間（100Tick = 5秒）
+
+    // 両方のハンドラーを無効化する ブロックが破壊されたりアンロードされた際にメモリリークを防ぐ
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
+        itemHandler.invalidate();
         inputHandler.invalidate();
         outputHandler.invalidate();
         energyHandler.invalidate();
     }
+
 
     // 毎Tick呼ばれる
     public void tick() {
@@ -137,6 +179,9 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
         nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
         nbt.put("Energy",energyStorage.serializeNBT());
+        nbt.put("Upgrades", upgradeInventory.serializeNBT());
+        nbt.putInt("Progress", progress);
+
     }
     @Override
     public void load(CompoundTag nbt) {
@@ -154,6 +199,11 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         if (nbt.contains("Energy")){
             energyStorage.deserializeNBT(nbt.getCompound("Energy"));
         }
+        //upgrade
+        if (nbt.contains("Upgrades")) {
+            upgradeInventory.deserializeNBT(nbt.getCompound("Upgrades"));
+        }
+        progress = nbt.getInt("Progress");
 
     }
 
