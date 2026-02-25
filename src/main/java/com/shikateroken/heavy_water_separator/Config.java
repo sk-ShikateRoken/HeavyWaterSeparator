@@ -1,5 +1,6 @@
 package com.shikateroken.heavy_water_separator;
 
+import mekanism.common.config.IMekanismConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 // An example config class. This is not required, but it's a good idea to have one to keep your config organized.
@@ -44,20 +45,39 @@ public class Config {
     public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static final ForgeConfigSpec SPEC;
 
-    // タンク容量を保持する変数
+    // tank size
     public static final ForgeConfigSpec.IntValue inputTANK_CAPACITY;
     public static final ForgeConfigSpec.IntValue outputTANK_CAPACITY;
     static {
         BUILDER.push("Machine Settings");
 
         // 項目名、デフォルト値、最小値、最大値を設定
-        inputTANK_CAPACITY = BUILDER.comment("Capacity of the fluid converter tanks in mB (1000mB = 1 Bucket)")
+        inputTANK_CAPACITY = BUILDER.comment("Capacity of the DTWHS tanks in mB (1000mB = 1 Bucket)")
                 .defineInRange("inputtankCapacity", 800000, 100000, Integer.MAX_VALUE);
-        outputTANK_CAPACITY = BUILDER.comment("Capacity of the fluid converter tanks in mB (1000mB = 1 Bucket)")
+        outputTANK_CAPACITY = BUILDER.comment("Capacity of the DTWHS tanks in mB (1000mB = 1 Bucket)")
                 .defineInRange("outputtankCapacity", 8000, 1000, Integer.MAX_VALUE);
+        BUILDER.pop();
+    }
+    // Energy
+    public static final ForgeConfigSpec.IntValue EnergyStorage_CAPACITY;
+    public static final ForgeConfigSpec.IntValue EnergyStorage_INPUTRATE;
+    public static final ForgeConfigSpec.IntValue EnergyCost;
+    static {
+        BUILDER.push("Machine Settings");
+        EnergyStorage_CAPACITY = BUILDER.comment("Capacity of the DTWHS energy storage in FE")
+                .defineInRange("EnergyStorageCapacity",40000,10000, Integer.MAX_VALUE);
+        EnergyStorage_INPUTRATE = BUILDER.comment("Input rate of the DTWHS energy storage in FE")
+                .defineInRange("EnergyStorageInputRate", Integer.MAX_VALUE, 1000,Integer.MAX_VALUE);
+        EnergyCost = BUILDER.comment("Energy Cost of the DTHWS in FE")
+                .defineInRange("EnergyCost", 4000,0,Integer.MAX_VALUE);
 
         BUILDER.pop();
         SPEC = BUILDER.build();
     }
-}
+
+
+    }
+
+
+
 

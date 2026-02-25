@@ -11,6 +11,8 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
@@ -31,16 +33,12 @@ private final LazyOptional<IFluidHandler> lazyFluidHandler = LazyOptional.of(() 
 public TileEntityDTHWS(BlockPos pos, BlockState state){
     super(HwsBlockEntity.TE_DTHWS.get(),pos, state);
 }
-//液体取り扱い
-//@Override
-//public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-//    if (cap == ForgeCapabilities.FLUID_HANDLER) {
-//        // 面(Direction)によって入力タンクを返すか出力タンクを返すか分けることができます
-//        // 例: 上面なら入力、下面なら出力など。ここではシンプルにlazyFluidHandlerを返しています。
-//        return lazyFluidHandler.cast();
-//    }
-//    return super.getCapability(cap, side);
-//}
+//FE define
+    public final EnergyStorage energyStorage = new EnergyStorage(Config.EnergyStorage_CAPACITY.get(),Config.EnergyStorage_INPUTRATE.get(),0);
+//FE handler
+private final LazyOptional<IEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
+
+//Fluid handler
 private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> inputTank);
     private final LazyOptional<IFluidHandler> outputHandler = LazyOptional.of(() -> outputTank);
 
@@ -54,23 +52,21 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
             // 上面や側面など、下面以外からのアクセスは入力タンクを返す
             return inputHandler.cast();
         }
+        if (cap == ForgeCapabilities.ENERGY){
+            return energyHandler.cast();
+        }
+
         return super.getCapability(cap, side);
     }
 
-    // 両方のハンドラーを無効化するように修正
+    // 両方のハンドラーを無効化するように修正ブロックが破壊されたりアンロードされた際にメモリリークを防ぐための処理
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
         inputHandler.invalidate();
         outputHandler.invalidate();
+        energyHandler.invalidate();
     }
-
-    // ブロックが破壊されたりアンロードされた際にメモリリークを防ぐための処理
-//    @Override
-//    public void invalidateCaps() {
-//        super.invalidateCaps();
-//        lazyFluidHandler.invalidate();
-//    }
 
     // 毎Tick呼ばれる
     public void tick() {
@@ -84,7 +80,11 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 //            }
 //            System.out.println("Output Tank: " + outputTank.getFluidAmount() + " mB");
 //        }
-
+        // Energy cost
+        int energyCost =Config.EnergyCost.get();
+        if (energyStorage.getEnergyStored() < energyCost){
+            return;
+        }
         // 1. 入力タンクが空なら何もしない（負荷軽減）
         if (inputTank.isEmpty()) return;
 
@@ -120,10 +120,23 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
                 // 出力タンクにレシピの指定量（resultFluid）を増やす
                 outputTank.fill(resultFluid, IFluidHandler.FluidAction.EXECUTE);
 
+                //use energy
+                energyStorage.extractEnergy(energyCost,false);
+
                 // データの変更をゲームに通知
                 setChanged();
             }
         }
+    }
+    // ワールド保存時にデータを書き込むメソッド
+    @Override
+    protected void saveAdditional(CompoundTag nbt) {
+        super.saveAdditional(nbt);
+
+        // それぞれのタンクの中身をNBTに変換して保存する
+        nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
+        nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
+        nbt.put("Energy",energyStorage.serializeNBT());
     }
     @Override
     public void load(CompoundTag nbt) {
@@ -137,17 +150,14 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         if (nbt.contains("OutputTank")) {
             outputTank.readFromNBT(nbt.getCompound("OutputTank"));
         }
+        //energy
+        if (nbt.contains("Energy")){
+            energyStorage.deserializeNBT(nbt.getCompound("Energy"));
+        }
+
     }
 
-    // ワールド保存時にデータを書き込むメソッド
-    @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
 
-        // それぞれのタンクの中身をNBTに変換して保存する
-        nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
-        nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
-    }
 }
 
 
