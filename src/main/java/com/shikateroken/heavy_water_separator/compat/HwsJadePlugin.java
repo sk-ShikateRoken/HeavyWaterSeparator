@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fluids.FluidStack;
 import snownee.jade.api.*;
 import snownee.jade.api.config.IPluginConfig;
-import snownee.jade.api.ui.IElementHelper;
 
 @WailaPlugin
 public class HwsJadePlugin implements IWailaPlugin {
@@ -30,9 +29,7 @@ public class HwsJadePlugin implements IWailaPlugin {
     public static class DTHWSProvider implements IBlockComponentProvider, IServerDataProvider<BlockAccessor> {
         public static final DTHWSProvider INSTANCE = new DTHWSProvider();
 
-        // =====================================================================
         // ① サーバー側の処理：プレイヤーがブロックを見た時、このデータを送る
-        // =====================================================================
         @Override
         public void appendServerData(CompoundTag data, BlockAccessor accessor) {
             if (accessor.getBlockEntity() instanceof TileEntityDTHWS tile) {
@@ -42,9 +39,7 @@ public class HwsJadePlugin implements IWailaPlugin {
             }
         }
 
-        // =====================================================================
         // ② クライアント側の処理：送られてきたデータを使って画面に描画する
-        // =====================================================================
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             if (accessor.getServerData().contains("OutputFluid")) {
                 CompoundTag fluidTag = accessor.getServerData().getCompound("OutputFluid");

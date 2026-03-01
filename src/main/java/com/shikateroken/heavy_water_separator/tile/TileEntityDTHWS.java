@@ -213,7 +213,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
             if (recipe.getInput().getFluid() == inputTank.getFluid().getFluid() &&
                     inputTank.getFluidAmount() >= recipe.getInput().getAmount()) {
                 currentRecipe = recipe;
-                break; // 見つかったらループを抜ける
+                break;
             }
         }
 
@@ -259,7 +259,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
      @Override
         protected void saveAdditional(CompoundTag nbt) {
             super.saveAdditional(nbt);
-//            System.out.println("Saving TileEntity..."); // ログ
+//            System.out.println("Saving TileEntity...");
 //            // インベントリのデータを保存
 //            CompoundTag upgradesTag = upgradeInventory.serializeNBT();
 //            nbt.put("Upgrades", upgradesTag);
