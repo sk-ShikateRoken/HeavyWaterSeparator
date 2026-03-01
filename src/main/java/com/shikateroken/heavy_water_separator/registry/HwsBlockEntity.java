@@ -7,10 +7,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public class HwsBlockEntity {
-    public static final String MODID = "heavy_water_separator";
+    public static final String MOD_ID = "heavy_water_separator";
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
+            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MOD_ID);
 
     // BlockEntityの登録と、どのブロックに紐づくかの設定
     public static final RegistryObject<BlockEntityType<TileEntityDTHWS>>

@@ -54,11 +54,17 @@ versionRange = "${forge_version_range}" #mandatory
 ordering = "NONE"
 # Side this dependency is applied on - BOTH, CLIENT, or SERVER
 side = "BOTH"# Here's another dependency
-[[dependencies."${mod_id}"]]
+[[dependencies."heavy_water_separator"]]
 modId = "minecraft"
 mandatory = true
-modID = "mekanism"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
+side = "BOTH"
+[[dependencies."heavy_water_separator"]]
+modId = "mekanism"
+mandatory = true
+# This version range declares a minimum of the current minecraft version up to but not including the next major version
+versionRange = "[10.4.0,)"
+ordering = "AFTER"
 side = "BOTH"

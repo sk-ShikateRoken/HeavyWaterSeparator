@@ -9,11 +9,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public class HwsBlocks {
-    // あなたのMod IDに書き換えてください
-    public static final String MODID = "heavy_water_separator";
+    public static final String MOD_ID = "heavy_water_separator";
 
     public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
+            DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
     // ブロックの登録（鉄ブロックの性質をコピー）
     public static final RegistryObject<Block> DTHWS = BLOCKS.register("dtwhs",
