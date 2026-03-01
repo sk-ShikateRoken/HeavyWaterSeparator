@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
 public class DTHWSScreen extends AbstractContainerScreen<DTHWSMenu> {
     //GUI 背景画像
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("hws","textures/gui/dthws_gui.png");
+            new ResourceLocation("heavy_water_separator","textures/gui/dthws_gui.png");
     public DTHWSScreen(DTHWSMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         this.imageWidth = 176;
