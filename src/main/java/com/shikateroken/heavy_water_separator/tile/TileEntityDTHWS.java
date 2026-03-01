@@ -32,6 +32,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
     // 同期するデータをまとめる
@@ -126,6 +129,31 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         super.onLoad();
         recalculateUpgrades();
     }
+    //面設定
+    private final Map<Direction, SideConfig> sideConfigs = new HashMap<>();
+    public TileEntityDTHWS(BlockPos, BlockState state){
+        super(HwsBlockEntity.TE_DTHWS.get(), pos, state);
+        //初期化
+        for(Direction dir : Direction.values()) {
+            sideConfigs.put(dir, SideConfig.NONE);
+        }
+    }
+    //設定変更
+    public void cycleConfig(Direction side) {
+        SideConfig current = sideConfigs.get(side);
+        SideConfig next = current.cycle();
+        sideConfigs.put(side, next);
+        setChanged(); // 保存フラグ
+
+        // クライアント同期用 (後で実装)
+        // level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
+    // 現在の設定を取得
+    public SideConfig getConfig(Direction side) {
+        return sideConfigs.get(side);
+    }
+
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
 
@@ -363,11 +391,6 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
 
     }
-
-
-
-
-
 }
 
 
