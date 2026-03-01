@@ -31,6 +31,9 @@ public class TileEntityDTHWS extends BlockEntity{
         public DynamicEnergyStorage(int capacity, int maxReceive, int maxExtract) {
             super(capacity, maxReceive, maxExtract);
         }
+        public void setEnergy(int energy) {
+            this.energy = energy;
+        }
 
         // 容量を強制的に変更するメソッドを追加
         public void setCapacity(int newCapacity) {
@@ -253,6 +256,24 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
 
     // ワールド保存時にデータを書き込むメソッド
+     @Override
+        protected void saveAdditional(CompoundTag nbt) {
+            super.saveAdditional(nbt);
+//            System.out.println("Saving TileEntity..."); // ログ
+//            // インベントリのデータを保存
+//            CompoundTag upgradesTag = upgradeInventory.serializeNBT();
+//            nbt.put("Upgrades", upgradesTag);
+//           // 保存しようとしているデータの中身を確認
+//           System.out.println("Saving 'Upgrades' tag: " + upgradesTag);
+
+            // それぞれのタンクの中身をNBTに変換して保存する
+            nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
+            nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
+            nbt.putInt("Energy",energyStorage.getEnergyStored());
+            nbt.put("Upgrades", upgradeInventory.serializeNBT());
+            nbt.putInt("Progress", progress);
+            }
+
     @Override//nbt読み込み
     public void load(CompoundTag nbt) {
         super.load(nbt);
@@ -267,7 +288,8 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         }
         //energy
         if (nbt.contains("Energy")){
-            energyStorage.deserializeNBT(nbt.getCompound("Energy"));
+            int savedEnergy  = nbt.getInt("Energy");
+            energyStorage.setEnergy(savedEnergy);
         }
         //upgrade
         if (nbt.contains("Upgrades")) {
@@ -289,24 +311,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
     }
 
-    @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
-        System.out.println("Saving TileEntity..."); // ログ
-        // インベントリのデータを保存
-        CompoundTag upgradesTag = upgradeInventory.serializeNBT();
-        nbt.put("Upgrades", upgradesTag);
-        // 保存しようとしているデータの中身を確認
-        System.out.println("Saving 'Upgrades' tag: " + upgradesTag);
 
-        // それぞれのタンクの中身をNBTに変換して保存する
-        nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
-        nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
-        nbt.put("Energy",energyStorage.serializeNBT());
-        nbt.put("Upgrades", upgradeInventory.serializeNBT());
-        nbt.putInt("Progress", progress);
-
-    }
 
 
 
