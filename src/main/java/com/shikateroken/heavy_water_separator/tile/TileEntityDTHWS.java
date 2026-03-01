@@ -1,11 +1,18 @@
 package com.shikateroken.heavy_water_separator.tile;
 
+import com.shikateroken.heavy_water_separator.menu.DTHWSMenu;
 import com.shikateroken.heavy_water_separator.recipe.FluidToFluidrecipe;
 import com.shikateroken.heavy_water_separator.registry.HwsRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,7 +33,53 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public class TileEntityDTHWS extends BlockEntity{
+public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
+    // 同期するデータをまとめる
+    protected final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> progress;
+                case 1 -> maxProgress; // キャッシュした最大時間
+                case 2 -> energyStorage.getEnergyStored();
+                case 3 -> energyStorage.getMaxEnergyStored();
+                case 4 -> inputTank.getFluidAmount();
+                case 5 -> inputTank.getCapacity();
+                case 6 -> outputTank.getFluidAmount();
+                case 7 -> outputTank.getCapacity();
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+            switch (index) {
+                case 0 -> progress = value;
+                case 1 -> maxProgress = value;
+                case 2 -> { /* エネルギーはクライアント側でセット不要 */ }
+                case 3 -> { }
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 8; // データの総数
+        }
+    };
+
+    // MenuProviderの実装: GUIのタイトル
+    @Override
+    public Component getDisplayName() {
+        return Component.literal("Heavy Water Separator");
+    }
+
+    // MenuProviderの実装: サーバー側でMenuを開く処理
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new DTHWSMenu(id, inventory, this, this.data);
+    }
+
     public static class DynamicEnergyStorage extends EnergyStorage {
         public DynamicEnergyStorage(int capacity, int maxReceive, int maxExtract) {
             super(capacity, maxReceive, maxExtract);
