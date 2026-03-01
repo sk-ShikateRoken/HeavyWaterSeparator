@@ -44,7 +44,7 @@ public class DTHWSRecipeCategory implements IRecipeCategory<FluidToFluidrecipe> 
 
     @Override
     public Component getTitle() {
-        return Component.translatable("block.heavy_water_separator.dthws_block");
+        return Component.translatable("block.heavy_water_separator.dthws");
     }
 
     @Override
