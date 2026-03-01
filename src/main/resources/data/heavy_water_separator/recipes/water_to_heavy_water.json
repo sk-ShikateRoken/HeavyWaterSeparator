@@ -2,10 +2,10 @@
   "type": "heavy_water_separator:fluid_to_fluid",
   "ingredient": {
     "fluid": "minecraft:water",
-    "amount": 100000
+    "amount": 2000000
   },
   "result": {
     "fluid": "mekanism:heavy_water",
-    "amount": 15
+    "amount": 300
   }
 }
