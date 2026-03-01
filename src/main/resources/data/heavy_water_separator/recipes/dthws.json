@@ -23,10 +23,10 @@
     },
     "F": {
       "item": "mekanism:superheating_element"
-    },
+    }
+  },
     "result": {
       "item": "heavy_water_separator:dthws",
       "count": 1
     }
   }
-}
