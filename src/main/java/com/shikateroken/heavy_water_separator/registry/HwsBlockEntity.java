@@ -14,6 +14,6 @@ public class HwsBlockEntity {
 
     // BlockEntityの登録と、どのブロックに紐づくかの設定
     public static final RegistryObject<BlockEntityType<TileEntityDTHWS>>
-            TE_DTHWS = BLOCK_ENTITIES.register("dtwhs",
+            TE_DTHWS = BLOCK_ENTITIES.register("dthws",
                     () -> BlockEntityType.Builder.of(TileEntityDTHWS::new, HwsBlocks.DTHWS.get()).build(null));
 }

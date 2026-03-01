@@ -15,7 +15,7 @@ public class HwsBlocks {
             DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
     // ブロックの登録（鉄ブロックの性質をコピー）
-    public static final RegistryObject<Block> DTHWS = BLOCKS.register("dtwhs",
+    public static final RegistryObject<Block> DTHWS = BLOCKS.register("dthws",
             () -> new TileDTHWS(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 }
 
