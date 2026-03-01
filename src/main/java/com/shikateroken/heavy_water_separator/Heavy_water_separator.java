@@ -1,10 +1,7 @@
 package com.shikateroken.heavy_water_separator;
 
 import com.mojang.logging.LogUtils;
-import com.shikateroken.heavy_water_separator.registry.HwsBlockEntity;
-import com.shikateroken.heavy_water_separator.registry.HwsBlocks;
-import com.shikateroken.heavy_water_separator.registry.HwsItems;
-import com.shikateroken.heavy_water_separator.registry.HwsRecipes;
+import com.shikateroken.heavy_water_separator.registry.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
@@ -70,7 +67,7 @@ public class Heavy_water_separator {
 //        CREATIVE_MODE_TABS.register(modEventBus);
         HwsRecipes.SERIALIZERS.register(modEventBus);
         HwsRecipes.TYPES.register(modEventBus);
-
+        HwsMenus.register(modEventBus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
