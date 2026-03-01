@@ -107,6 +107,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
         @Override
         protected void onContentsChanged(int slot) {
+            recalculateUpgrades();
             setChanged();
         }
     };
@@ -161,21 +162,28 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         // バッテリーの設定を更新
         energyStorage.setCapacity(newCapacity);
         energyStorage.setMaxReceive(newReceive);
+
+
+    }
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        recalculateUpgrades();
     }
 
     // 毎Tick呼ばれる
     public void tick() {
         if (level == null || level.isClientSide()) return;
-        // 【デバッグ用】1秒（20Tick）に1回だけコンソールに出力する
-        if (level.getGameTime() % 20 == 0) {
-            System.out.println("========== DTHWS Debug ==========");
-            System.out.println("Input Tank : " + inputTank.getFluidAmount() + " mB");
-            if (!inputTank.isEmpty()) {
-                System.out.println("Input Fluid: " + inputTank.getFluid().getTranslationKey());
-            }
-            System.out.println("Output Tank: " + outputTank.getFluidAmount() + " mB");
-            System.out.println("energyStorage : " + energyStorage.getEnergyStored() + "FE");
-        }
+//        // 【デバッグ用】1秒（20Tick）に1回だけコンソールに出力する
+//        if (level.getGameTime() % 20 == 0) {
+//            System.out.println("========== DTHWS Debug ==========");
+//            System.out.println("Input Tank : " + inputTank.getFluidAmount() + " mB");
+//            if (!inputTank.isEmpty()) {
+//                System.out.println("Input Fluid: " + inputTank.getFluid().getTranslationKey());
+//            }
+//            System.out.println("Output Tank: " + outputTank.getFluidAmount() + " mB");
+//            System.out.println("energyStorage : " + energyStorage.getEnergyStored() + "FE");
+//        }
         //入力タンクがからなら進捗を0として終了
         if (inputTank.isEmpty()){
             progress = 0;
@@ -275,6 +283,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         nbt.put("Energy",energyStorage.serializeNBT());
         nbt.put("Upgrades", upgradeInventory.serializeNBT());
         nbt.putInt("Progress", progress);
+
 
     }
     @Override
