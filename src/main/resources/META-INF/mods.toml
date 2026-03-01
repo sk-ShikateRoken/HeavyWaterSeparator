@@ -68,3 +68,10 @@ mandatory = true
 versionRange = "[10.4.0,)"
 ordering = "AFTER"
 side = "BOTH"
+[[dependencies."heavy_water_separator"]]
+modId = "mekanismgenerators"
+mandatory = true
+# This version range declares a minimum of the current minecraft version up to but not including the next major version
+versionRange = "[10.4.0,)"
+ordering = "AFTER"
+side = "BOTH"
