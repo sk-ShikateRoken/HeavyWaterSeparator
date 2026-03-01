@@ -1,6 +1,7 @@
 package com.shikateroken.heavy_water_separator.menu;
 
 import com.shikateroken.heavy_water_separator.registry.HwsBlocks;
+import com.shikateroken.heavy_water_separator.registry.HwsMenus;
 import com.shikateroken.heavy_water_separator.tile.TileEntityDTHWS;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
