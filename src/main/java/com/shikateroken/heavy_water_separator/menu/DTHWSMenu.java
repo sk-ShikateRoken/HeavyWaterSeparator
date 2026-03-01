@@ -98,6 +98,9 @@ public class DTHWSMenu extends AbstractContainerMenu {
     public int getMaxProgress() { return data.get(1); }
     public int getEnergy() { return data.get(2); }
     public int getMaxEnergy() { return data.get(3); }
-    // タンク情報などは別途同期するか、簡単な数値だけ送るならここに追加
+    public int getFluidInAmount() { return data.get(4); }
+    public int getMaxFluidInAmount() { return data.get(5); }
+    public int getFluidOutAmount() { return data.get(6); }
+    public int getMaxFluidOutAmount() { return data.get(7); }
 
     }
