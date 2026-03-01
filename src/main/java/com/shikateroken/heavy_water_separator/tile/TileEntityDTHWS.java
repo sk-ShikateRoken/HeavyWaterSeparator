@@ -65,7 +65,11 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
     public int progress = 0;
     private int maxProgress = 20; // 基本の処理時間（20Tick = 1秒）
     private int cachedEnergyCost = Config.EnergyCost.get();
-
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        recalculateUpgrades();
+    }
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
 
@@ -162,14 +166,12 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         // バッテリーの設定を更新
         energyStorage.setCapacity(newCapacity);
         energyStorage.setMaxReceive(newReceive);
-
-
+        // 【デバッグ用】 計算結果の確認
+        System.out.println("New MaxProgress: " + this.maxProgress);
+        System.out.println("New EnergyCost: " + this.cachedEnergyCost);
+        System.out.println("New Capacity: " + newCapacity);
     }
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        recalculateUpgrades();
-    }
+
 
     // 毎Tick呼ばれる
     public void tick() {
