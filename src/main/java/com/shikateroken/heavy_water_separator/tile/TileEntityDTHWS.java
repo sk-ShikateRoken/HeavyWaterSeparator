@@ -111,8 +111,8 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
         @Override
         protected void onContentsChanged(int slot) {
-            recalculateUpgrades();
             setChanged();
+            recalculateUpgrades();
         }
     };
 
@@ -143,7 +143,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         //処理時間の計算
         this.maxProgress = Math.max(1,(int)(baseTicks / (2* speedMultiplier)));
         // 消費電力を計算: 基本電力 * (速度倍率のさらに倍)
-        // Mekanismは速度を上げると燃費が悪くなる仕様です (10^(2*枚数/8))
+        // 10^(2*枚数/8)
         double energyMultiplier = Math.pow(10, (2 * speedCount) / 8.0);
         this.cachedEnergyCost = (int) (baseEnergyCost * energyMultiplier);
         // 2. Energy Upgrade の計算 (容量増加 & 消費電力軽減)
@@ -156,7 +156,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
         // 最終的な消費電力の適用
         this.cachedEnergyCost = (int) (this.cachedEnergyCost * energyReduction);
-        // ※最低でも1FEは消費するようにする
+        // 最低でも1FEは消費するようにする
         if (this.cachedEnergyCost < 1) this.cachedEnergyCost = 1;
 
         // 容量と受入速度の適用
@@ -167,9 +167,9 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         energyStorage.setCapacity(newCapacity);
         energyStorage.setMaxReceive(newReceive);
         // 【デバッグ用】 計算結果の確認
-        System.out.println("New MaxProgress: " + this.maxProgress);
-        System.out.println("New EnergyCost: " + this.cachedEnergyCost);
-        System.out.println("New Capacity: " + newCapacity);
+//        System.out.println("New MaxProgress: " + this.maxProgress);
+//        System.out.println("New EnergyCost: " + this.cachedEnergyCost);
+//        System.out.println("New Capacity: " + newCapacity);
     }
 
 
@@ -191,26 +191,12 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
             progress = 0;
             return;
         }
-//        //アップグレード枚数を取得
-//        int speedUpgreads = upgradeInventory.getStackInSlot(0).getCount();
-//        int energyUpgreads = upgradeInventory.getStackInSlot(1).getCount();
 //
-//        //アップグレード計算
-
-//        double dmp = Math.max(1,20 - (19.0 / 64) *(this.maxProgress )*(this.maxProgress ));
-//        int currentMaxProgress = (int) Math.floor(dmp);
-//
-//     double dec = Config.EnergyCost.get() * Math.pow(10,(2.0 * speedUpgreads - energyUpgreads)/8);
-//        int currentEnergyCost = (int) Math.floor(dec);
         //エネルギーが足りなければ停止
         if (energyStorage.getEnergyStored() < cachedEnergyCost){
             return;
         }
-        // Energy cost
-//        int energyCost =Config.EnergyCost.get();
-//        if (energyStorage.getEnergyStored() < energyCost){
-//            return;
-//        }
+
         // 1. 入力タンクが空なら何もしない
         if (inputTank.isEmpty()) return;
 
@@ -255,16 +241,6 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
                     // プログレスをリセットして次の処理へ
                     progress = 0;
                 }
-//旧加工ロジック
-//                // 入力タンクからレシピの指定量（consumeAmount）を減らす
-//                inputTank.drain(consumeAmount, IFluidHandler.FluidAction.EXECUTE);
-//
-//                // 出力タンクにレシピの指定量（resultFluid）を増やす
-//                outputTank.fill(resultFluid, IFluidHandler.FluidAction.EXECUTE);
-//
-//                //use energy
-//                energyStorage.extractEnergy(energyCost,false);
-
                 // データの変更をゲームに通知
                 setChanged();
             }else {
@@ -274,21 +250,10 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
             progress = 0;
         }
     }
+
+
     // ワールド保存時にデータを書き込むメソッド
-    @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
-
-        // それぞれのタンクの中身をNBTに変換して保存する
-        nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
-        nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
-        nbt.put("Energy",energyStorage.serializeNBT());
-        nbt.put("Upgrades", upgradeInventory.serializeNBT());
-        nbt.putInt("Progress", progress);
-
-
-    }
-    @Override
+    @Override//nbt読み込み
     public void load(CompoundTag nbt) {
         super.load(nbt);
 
@@ -309,8 +274,40 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
             upgradeInventory.deserializeNBT(nbt.getCompound("Upgrades"));
         }
         progress = nbt.getInt("Progress");
+        if (nbt.contains("Upgrades")) {
+            System.out.println("Found 'Upgrades' tag! Loading inventory..."); // ログ
+            upgradeInventory.deserializeNBT(nbt.getCompound("Upgrades"));
+
+            // 読み込んだ中身を確認
+            System.out.println("Loaded Item in Slot 0: " + upgradeInventory.getStackInSlot(0));
+        } else {
+            System.out.println("WARNING: 'Upgrades' tag NOT found in NBT."); // ログ
+        }
+
+        recalculateUpgrades();
+
 
     }
+
+    @Override
+    protected void saveAdditional(CompoundTag nbt) {
+        super.saveAdditional(nbt);
+        System.out.println("Saving TileEntity..."); // ログ
+        // インベントリのデータを保存
+        CompoundTag upgradesTag = upgradeInventory.serializeNBT();
+        nbt.put("Upgrades", upgradesTag);
+        // 保存しようとしているデータの中身を確認
+        System.out.println("Saving 'Upgrades' tag: " + upgradesTag);
+
+        // それぞれのタンクの中身をNBTに変換して保存する
+        nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
+        nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
+        nbt.put("Energy",energyStorage.serializeNBT());
+        nbt.put("Upgrades", upgradeInventory.serializeNBT());
+        nbt.putInt("Progress", progress);
+
+    }
+
 
 
 }
