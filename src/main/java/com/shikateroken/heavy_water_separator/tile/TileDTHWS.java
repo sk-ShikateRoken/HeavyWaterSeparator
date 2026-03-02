@@ -3,10 +3,13 @@ package com.shikateroken.heavy_water_separator.tile;
 import com.shikateroken.heavy_water_separator.registry.HwsBlockEntity;
 import com.shikateroken.heavy_water_separator.registry.HwsBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -52,6 +55,28 @@ public class TileDTHWS extends Block implements EntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        ItemStack heldItem = player.getItemInHand(hand);
+
+        // MekanismのConfiguratorを持っているか、あるいはスニーク中か判定
+        // "mekanism:configurator" というIDで簡易判定
+        boolean isConfigurator = heldItem.getItem().getDescriptionId().contains("configurator");
+
+        // スニークしながら右クリックで設定切り替え (またはConfigurator使用)
+        if (player.isCrouching() || isConfigurator) {
+            if (!level.isClientSide()) {
+                BlockEntity entity = level.getBlockEntity(pos);
+                if (entity instanceof TileEntityDTHWS tile) {
+                    // クリックされた面の設定を切り替え
+                    Direction clickedFace = hit.getDirection();
+                    tile.cycleConfig(clickedFace);
+
+                    // チャットで今の設定を教えてあげる
+                    SideConfig newConfig = tile.getConfig(clickedFace);
+                    player.sendSystemMessage(Component.literal("Side " + clickedFace.getName() + ": " + newConfig.name()));
+                }
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
         if (!level.isClientSide()) {
             BlockEntity entity = level.getBlockEntity(pos);
             if (entity instanceof TileEntityDTHWS) {

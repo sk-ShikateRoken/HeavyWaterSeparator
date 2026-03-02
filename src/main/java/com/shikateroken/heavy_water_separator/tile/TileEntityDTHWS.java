@@ -60,7 +60,8 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
                 case 0 -> progress = value;
                 case 1 -> maxProgress = value;
                 case 2 -> { /* エネルギーはクライアント側でセット不要 */ }
-                case 3 -> { }
+                case 3 -> {
+                }
             }
         }
 
@@ -87,6 +88,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
         public DynamicEnergyStorage(int capacity, int maxReceive, int maxExtract) {
             super(capacity, maxReceive, maxExtract);
         }
+
         public void setEnergy(int energy) {
             this.energy = energy;
         }
@@ -99,45 +101,50 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
                 this.energy = newCapacity;
             }
         }
+
         // 受入速度変更
         public void setMaxReceive(int newMaxReceive) {
             this.maxReceive = newMaxReceive;
         }
     }
+
     //タンク容量の指定
     public final FluidTank inputTank = new FluidTank(Config.inputTANK_CAPACITY.get());
 
     public final FluidTank outputTank = new FluidTank(Config.outputTANK_CAPACITY.get());
-private final LazyOptional<IFluidHandler> lazyFluidHandler = LazyOptional.of(() -> inputTank);
-public TileEntityDTHWS(BlockPos pos, BlockState state){
-    super(HwsBlockEntity.TE_DTHWS.get(),pos, state);
-}
-//FE define
-    public final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(Config.EnergyStorage_CAPACITY.get(),Config.EnergyStorage_INPUTRATE.get(),Config.EnergyStorage_OUTPUTRATE.get());
-//FE handler
-private final LazyOptional<IEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
+    private final LazyOptional<IFluidHandler> lazyFluidHandler = LazyOptional.of(() -> inputTank);
 
-//Fluid handler
-private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> inputTank);
+
+    //FE define
+    public final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(Config.EnergyStorage_CAPACITY.get(), Config.EnergyStorage_INPUTRATE.get(), Config.EnergyStorage_OUTPUTRATE.get());
+    //FE handler
+    private final LazyOptional<IEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
+
+    //Fluid handler
+    private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> inputTank);
     private final LazyOptional<IFluidHandler> outputHandler = LazyOptional.of(() -> outputTank);
     // cache
     public int progress = 0;
     private int maxProgress = 20; // 基本の処理時間（20Tick = 1秒）
     private int cachedEnergyCost = Config.EnergyCost.get();
+
     @Override
     public void onLoad() {
         super.onLoad();
         recalculateUpgrades();
     }
+
     //面設定
     private final Map<Direction, SideConfig> sideConfigs = new HashMap<>();
-    public TileEntityDTHWS(BlockPos, BlockState state){
+
+    public TileEntityDTHWS(BlockPos pos, BlockState state) {
         super(HwsBlockEntity.TE_DTHWS.get(), pos, state);
         //初期化
-        for(Direction dir : Direction.values()) {
+        for (Direction dir : Direction.values()) {
             sideConfigs.put(dir, SideConfig.NONE);
         }
     }
+
     //設定変更
     public void cycleConfig(Direction side) {
         SideConfig current = sideConfigs.get(side);
@@ -156,21 +163,33 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-
+        if (side == null) {
+            return super.getCapability(cap, side);
+        }
+        SideConfig config = sideConfigs.get(side);
+        //アイテムハンドラー
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
             return itemHandler.cast();
         }
 
         if (cap == ForgeCapabilities.FLUID_HANDLER) {
-            // ブロックの「下面(DOWN)」からアクセスされた場合は、出力タンクを返す
-            if (side == Direction.DOWN) {
-                return outputHandler.cast();
+            // input設定なら入力タンクへのアクセスのみ
+            if (config == SideConfig.INPUT) {
+                return LazyOptional.of(() -> inputTank).cast();
             }
-            // 上面や側面など、下面以外からのアクセスは入力タンクを返す
-            return inputHandler.cast();
+            //output設定なら出力タンクのみ
+            if (config == SideConfig.OUTPUT) {
+                return LazyOptional.of(() -> outputTank).cast();
+            }
+            //他ならアクセス不可
+            return LazyOptional.empty();
         }
-        if (cap == ForgeCapabilities.ENERGY){
-            return energyHandler.cast();
+        //energy
+        if (cap == ForgeCapabilities.ENERGY) {
+            if (config == SideConfig.ENERGY) {
+                return energyHandler.cast();
+            }
+            return LazyOptional.empty();
         }
 
         return super.getCapability(cap, side);
@@ -182,7 +201,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 
             ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
             if (id == null) return false;
-           //  スロット0はSpeed、スロット1はEnergyアップグレードのみ受け入れる
+            //  スロット0はSpeed、スロット1はEnergyアップグレードのみ受け入れる
             if (slot == 0) return id.toString().equals("mekanism:upgrade_speed");
             if (slot == 1) return id.toString().equals("mekanism:upgrade_energy");
             return false;
@@ -203,7 +222,6 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
     private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> upgradeInventory);
 
 
-
     // 両方のハンドラーを無効化する ブロックが破壊されたりアンロードされた際にメモリリークを防ぐ
     @Override
     public void invalidateCaps() {
@@ -213,6 +231,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         outputHandler.invalidate();
         energyHandler.invalidate();
     }
+
     private void recalculateUpgrades() {
 
         int speedCount = upgradeInventory.getStackInSlot(0).getCount();
@@ -225,7 +244,7 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
         //Speed Upgradeの計算
         double speedMultiplier = Math.pow(10, speedCount / 8.0);
         //処理時間の計算
-        this.maxProgress = Math.max(1,(int)(baseTicks / (2* speedMultiplier)));
+        this.maxProgress = Math.max(1, (int) (baseTicks / (2 * speedMultiplier)));
         // 消費電力を計算: 基本電力 * (速度倍率のさらに倍)
         // 10^(2*枚数/8)
         double energyMultiplier = Math.pow(10, (2 * speedCount) / 8.0);
@@ -271,13 +290,13 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
 //            System.out.println("energyStorage : " + energyStorage.getEnergyStored() + "FE");
 //        }
         //入力タンクがからなら進捗を0として終了
-        if (inputTank.isEmpty()){
+        if (inputTank.isEmpty()) {
             progress = 0;
             return;
         }
 //
         //エネルギーが足りなければ停止
-        if (energyStorage.getEnergyStored() < cachedEnergyCost){
+        if (energyStorage.getEnergyStored() < cachedEnergyCost) {
             return;
         }
 
@@ -327,33 +346,39 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
                 }
                 // データの変更をゲームに通知
                 setChanged();
-            }else {
+            } else {
                 progress = 0;
             }
-        }else {
+        } else {
             progress = 0;
         }
     }
 
 
     // ワールド保存時にデータを書き込むメソッド
-     @Override
-        protected void saveAdditional(CompoundTag nbt) {
-            super.saveAdditional(nbt);
+    @Override
+    protected void saveAdditional(CompoundTag nbt) {
+        super.saveAdditional(nbt);
 //            System.out.println("Saving TileEntity...");
 //            // インベントリのデータを保存
 //            CompoundTag upgradesTag = upgradeInventory.serializeNBT();
 //            nbt.put("Upgrades", upgradesTag);
 //           // 保存しようとしているデータの中身を確認
 //           System.out.println("Saving 'Upgrades' tag: " + upgradesTag);
+        // 各面の設定を保存
+        CompoundTag configTag = new CompoundTag();
+        for (Direction dir : Direction.values()) {
+            configTag.putString(dir.getName(), sideConfigs.get(dir).getSerializedName());
+        }
+        nbt.put("SideConfigs", configTag);
 
-            // それぞれのタンクの中身をNBTに変換して保存する
-            nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
-            nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
-            nbt.putInt("Energy",energyStorage.getEnergyStored());
-            nbt.put("Upgrades", upgradeInventory.serializeNBT());
-            nbt.putInt("Progress", progress);
-            }
+        // それぞれのタンクの中身をNBTに変換して保存する
+        nbt.put("InputTank", inputTank.writeToNBT(new CompoundTag()));
+        nbt.put("OutputTank", outputTank.writeToNBT(new CompoundTag()));
+        nbt.putInt("Energy", energyStorage.getEnergyStored());
+        nbt.put("Upgrades", upgradeInventory.serializeNBT());
+        nbt.putInt("Progress", progress);
+    }
 
     @Override//nbt読み込み
     public void load(CompoundTag nbt) {
@@ -368,13 +393,14 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
             outputTank.readFromNBT(nbt.getCompound("OutputTank"));
         }
         //energy
-        if (nbt.contains("Energy")){
-            int savedEnergy  = nbt.getInt("Energy");
+        if (nbt.contains("Energy")) {
+            int savedEnergy = nbt.getInt("Energy");
             energyStorage.setEnergy(savedEnergy);
         }
         //upgrade
         if (nbt.contains("Upgrades")) {
             upgradeInventory.deserializeNBT(nbt.getCompound("Upgrades"));
+            recalculateUpgrades();
         }
         progress = nbt.getInt("Progress");
         if (nbt.contains("Upgrades")) {
@@ -382,13 +408,23 @@ private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> i
             upgradeInventory.deserializeNBT(nbt.getCompound("Upgrades"));
 
             // 読み込んだ中身を確認
-            System.out.println("Loaded Item in Slot 0: " + upgradeInventory.getStackInSlot(0));
-        } else {
-            System.out.println("WARNING: 'Upgrades' tag NOT found in NBT."); // ログ
+//            System.out.println("Loaded Item in Slot 0: " + upgradeInventory.getStackInSlot(0));
+//        } else {
+//            System.out.println("WARNING: 'Upgrades' tag NOT found in NBT."); // ログ
         }
-
-        recalculateUpgrades();
-
+        //読み込む
+        if (nbt.contains("SideConfigs")) {
+            CompoundTag configTag = nbt.getCompound("SideConfigs");
+            for (Direction dir : Direction.values()) {
+                String name = configTag.getString(dir.getName());
+                // 名前からEnumに戻す
+                SideConfig config = SideConfig.NONE;
+                for (SideConfig c : SideConfig.values()) {
+                    if (c.getSerializedName().equals(name)) config = c;
+                }
+                sideConfigs.put(dir, config);
+            }
+        }
 
     }
 }
