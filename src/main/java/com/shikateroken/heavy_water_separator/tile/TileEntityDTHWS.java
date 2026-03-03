@@ -119,6 +119,10 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
     public final DynamicEnergyStorage energyStorage = new DynamicEnergyStorage(Config.EnergyStorage_CAPACITY.get(), Config.EnergyStorage_INPUTRATE.get(), Config.EnergyStorage_OUTPUTRATE.get());
     //FE handler
     private final LazyOptional<IEnergyStorage> energyHandler = LazyOptional.of(() -> energyStorage);
+    public net.minecraftforge.energy.IEnergyStorage getEnergyStorage() {
+        return this.energyStorage;
+    }
+
 
     //Fluid handler
     private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> inputTank);
