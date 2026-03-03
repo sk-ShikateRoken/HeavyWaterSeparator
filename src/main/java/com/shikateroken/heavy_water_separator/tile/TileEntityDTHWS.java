@@ -431,6 +431,10 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
         }
 
     }
+    // MenuからアクセスするためのGetter
+    public ItemStackHandler getUpgradeInventory() {
+        return this.upgradeInventory;
+    }
 }
 
 

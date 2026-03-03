@@ -10,6 +10,8 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class DTHWSMenu extends AbstractContainerMenu {
@@ -32,13 +34,12 @@ public class DTHWSMenu extends AbstractContainerMenu {
         // ---------------------------------------------------
         // 1. アップグレードスロットの追加 (Mekanism風に配置)
         // ---------------------------------------------------
-        this.tile.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
+        if (this.tile != null) {
+            IItemHandler upgradeHandler = this.tile.getUpgradeInventory();
             // Speed Upgrade (左上に配置してみる)
-            this.addSlot(new SlotItemHandler(handler, 0, 152, 8)); // 座標 x:152, y:8
-            // Energy Upgrade (その下)
-            this.addSlot(new SlotItemHandler(handler, 1, 152, 26)); // 座標 x:152, y:26
-        });
-
+            this.addSlot(new SlotItemHandler(upgradeHandler, 0, 152, 8));  // Slot 0
+            this.addSlot(new SlotItemHandler(upgradeHandler, 1, 152, 26)); // Slot 1
+        }
         // ---------------------------------------------------
         // 2. プレイヤーのインベントリ (定型文)
         // ---------------------------------------------------
@@ -69,18 +70,23 @@ public class DTHWSMenu extends AbstractContainerMenu {
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
+
         if (slot != null && slot.hasItem()) {
             ItemStack stack = slot.getItem();
             itemstack = stack.copy();
 
-            // アップグレードスロットからプレイヤーインベントリへ
-            if (index < 2) {
-                if (!this.moveItemStackTo(stack, 2, 38, true)) {
+            // アップグレードスロットの数（今は2つに設定）
+            int upgradeSlotCount = 2;
+
+            // アップグレードスロット -> プレイヤーインベントリ
+            if (index < upgradeSlotCount) {
+                if (!this.moveItemStackTo(stack, upgradeSlotCount, 36 + upgradeSlotCount, true)) {
                     return ItemStack.EMPTY;
                 }
             }
-            // プレイヤーインベントリからアップグレードスロットへ
-            else if (!this.moveItemStackTo(stack, 0, 2, false)) {
+            // プレイヤーインベントリ -> アップグレードスロット
+            // moveItemStackToの範囲指定を修正 (0～upgradeSlotCountへ移動)
+            else if (!this.moveItemStackTo(stack, 0, upgradeSlotCount, false)) {
                 return ItemStack.EMPTY;
             }
 

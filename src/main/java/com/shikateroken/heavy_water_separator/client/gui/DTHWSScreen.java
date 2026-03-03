@@ -92,5 +92,11 @@ public class DTHWSScreen extends AbstractContainerScreen<DTHWSMenu> {
         if (isHovering(8, 20, 10, 50, mouseX, mouseY)) {
             graphics.renderTooltip(font, Component.literal(this.menu.getEnergy() + " / " + this.menu.getMaxEnergy() + " FE"), mouseX, mouseY);
         }
+        if (isHovering(30, 20, 32, 50, mouseX, mouseY)) {
+            graphics.renderTooltip(font, Component.literal(this.menu.getFluidInAmount() + " / " + this.menu.getMaxFluidInAmount() + "mB"), mouseX, mouseY);
+        }
+        if (isHovering(130, 20, 132, 50, mouseX, mouseY)){
+            graphics.renderTooltip(font, Component.literal(this.menu.getFluidOutAmount() + " / " + this.menu.getMaxFluidOutAmount() + "mB"), mouseX, mouseY);
+        }
     }
 }
