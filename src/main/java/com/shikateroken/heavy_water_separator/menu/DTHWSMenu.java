@@ -3,6 +3,7 @@ package com.shikateroken.heavy_water_separator.menu;
 import com.shikateroken.heavy_water_separator.registry.HwsBlocks;
 import com.shikateroken.heavy_water_separator.registry.HwsMenus;
 import com.shikateroken.heavy_water_separator.tile.TileEntityDTHWS;
+import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +20,7 @@ public class DTHWSMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public DTHWSMenu(int windowId, Inventory inv, FriendlyByteBuf extraData) {
-        this(windowId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(8));
+        this(windowId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(14));
     }
 
     // サーバー側（データ同期用）のコンストラクタ
@@ -31,22 +32,18 @@ public class DTHWSMenu extends AbstractContainerMenu {
         // タイルエンティティの数値データを同期設定
         addDataSlots(data);
 
-        // ---------------------------------------------------
-        // 1. アップグレードスロットの追加 (Mekanism風に配置)
-        // ---------------------------------------------------
+        // 1. アップグレードスロットの追加
         if (this.tile != null) {
             IItemHandler upgradeHandler = this.tile.getUpgradeInventory();
             // Speed Upgrade (左上に配置してみる)
             this.addSlot(new SlotItemHandler(upgradeHandler, 0, 152, 8));  // Slot 0
             this.addSlot(new SlotItemHandler(upgradeHandler, 1, 152, 26)); // Slot 1
         }
-        // ---------------------------------------------------
         // 2. プレイヤーのインベントリ (定型文)
-        // ---------------------------------------------------
         layoutPlayerInventorySlots(inv, 8, 84);
     }
 
-    // プレイヤーのインベントリを配置するメソッド
+    // プレイヤーのインベントリを配置
     private void layoutPlayerInventorySlots(Inventory inv, int leftCol, int topRow) {
         // プレイヤーのメインインベントリ (3行9列)
         for (int row = 0; row < 3; row++) {
@@ -58,6 +55,27 @@ public class DTHWSMenu extends AbstractContainerMenu {
         for (int col = 0; col < 9; col++) {
             addSlot(new Slot(inv, col, leftCol + col * 18, topRow + 58));
         }
+    }
+    // クリック処理
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+                // ID 10: Down, 11: Up, 12: North, 13: South, 14: West, 15: East
+        if (id >= 10 && id <= 15) {
+            int dirIndex = id - 10; // 0～5に戻す
+            if (dirIndex >= 0 && dirIndex < Direction.values().length) {
+                Direction dir = Direction.values()[dirIndex];
+                // サーバー側のTileEntityの設定を変更
+                this.tile.cycleConfig(dir);
+                return true;
+            }
+        }
+        return super.clickMenuButton(player, id);
+    }
+
+    // GUI側から設定値を取得するためのヘルパーメソッド
+    public int getSideConfigOrdinal(Direction dir) {
+        // インデックス 8 からスタート (Down=8, Up=9, ...)
+        return this.data.get(8 + dir.ordinal());
     }
 
     @Override

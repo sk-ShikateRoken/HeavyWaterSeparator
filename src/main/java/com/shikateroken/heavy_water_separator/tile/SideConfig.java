@@ -6,8 +6,7 @@ import net.minecraft.util.StringRepresentable;
         NONE("none"),      // 無効
         INPUT("input"),    // 入力 (赤)
         OUTPUT("output"),  // 出力 (青)
-        ENERGY("energy");  // 電力 (緑) - 必要なら
-
+        ENERGY("energy");  // 電力 (緑)
         private final String name;
 
         SideConfig(String name) {

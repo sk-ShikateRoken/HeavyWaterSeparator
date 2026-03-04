@@ -50,6 +50,13 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
                 case 5 -> inputTank.getCapacity();
                 case 6 -> outputTank.getFluidAmount();
                 case 7 -> outputTank.getCapacity();
+                case 8 -> sideConfigs.get(Direction.DOWN).ordinal();
+                case 9 -> sideConfigs.get(Direction.UP).ordinal();
+                case 10 -> sideConfigs.get(Direction.NORTH).ordinal();
+                case 11 -> sideConfigs.get(Direction.SOUTH).ordinal();
+                case 12 -> sideConfigs.get(Direction.WEST).ordinal();
+                case 13 -> sideConfigs.get(Direction.EAST).ordinal();
+
                 default -> 0;
             };
         }
@@ -67,7 +74,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
 
         @Override
         public int getCount() {
-            return 8; // データの総数
+            return 14; // データの総数
         }
     };
 
@@ -432,9 +439,9 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
 
     }
     // MenuからアクセスするためのGetter
-    public ItemStackHandler getUpgradeInventory() {
-        return this.upgradeInventory;
-    }
+    public ItemStackHandler getUpgradeInventory()
+    {return this.upgradeInventory;}
+
 }
 
 

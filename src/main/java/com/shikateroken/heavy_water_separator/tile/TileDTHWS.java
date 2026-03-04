@@ -61,8 +61,8 @@ public class TileDTHWS extends Block implements EntityBlock {
         // "mekanism:configurator" というIDで簡易判定
         boolean isConfigurator = heldItem.getItem().getDescriptionId().contains("configurator");
 
-        // スニークしながら右クリックで設定切り替え (またはConfigurator使用)
-        if (player.isCrouching() || isConfigurator) {
+        // Configurator使用で設定変更
+        if (isConfigurator) {
             if (!level.isClientSide()) {
                 BlockEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof TileEntityDTHWS tile) {
