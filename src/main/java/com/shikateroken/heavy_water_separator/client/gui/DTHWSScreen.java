@@ -131,9 +131,9 @@ public class DTHWSScreen extends AbstractContainerScreen<DTHWSMenu> {
         // 色の決定 (SideConfigの定義コメントに基づく)
         int color;
         switch (config) {
-            case INPUT ->  color = 0xFFFF0000; // 赤 (ARGB)
-            case OUTPUT -> color = 0xFF0000FF; // 青
-            case ENERGY -> color = 0xFF00FF00; // 緑
+            case INPUT ->  color = 0xFF651D26; // 赤 (ARGB)
+            case OUTPUT -> color = 0xFF334464; // 青
+            case ENERGY -> color = 0xFF418D45; // 緑
             default ->     color = 0xFF555555; // NONE (灰色)
         }
 
