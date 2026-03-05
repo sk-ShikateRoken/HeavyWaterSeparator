@@ -1,10 +1,11 @@
-{"prent": "heavy_water_separator:block/machine",
+{
+  "parent": "minecraft:block/cube",
   "textures": {
-    "sides":"heavy_water_separator:block/dthws/right",
-    "front":"heavy_water_separator:block/dtwhs/front",
-    "west":"heavy_water_separator:block/dtwhs/right",
-    "east":"heavy_water_separator:block/dtwhs/left",
-    "south":"heavy_water_separator:block/dtwhs/back",
-    "up":"heavy_water_separator:block/dtwhs/top",
-    "down":"heavy_water_separator:block/dtwhs/bottom"}
+    "particle":"heavy_water_separator:block/dthws/side",
+    "north":"heavy_water_separator:block/dthws/front",
+    "west":"heavy_water_separator:block/dthws/side",
+    "east":"heavy_water_separator:block/dthws/side",
+    "south":"heavy_water_separator:block/dthws/back",
+    "up":"heavy_water_separator:block/dthws/top",
+    "down":"heavy_water_separator:block/dthws/bottom"}
 }

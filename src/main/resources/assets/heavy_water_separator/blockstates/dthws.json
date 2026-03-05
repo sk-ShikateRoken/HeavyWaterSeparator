@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "heavy_water_separator:block/dthws" },
+    "facing=south": { "model": "heavy_water_separator:block/dthws", "y": 180 },
+    "facing=west":  { "model": "heavy_water_separator:block/dthws", "y": 270 },
+    "facing=east":  { "model": "heavy_water_separator:block/dthws", "y": 90 }
+  }
+}
