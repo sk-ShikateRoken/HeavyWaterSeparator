@@ -1,9 +1,9 @@
 {"prent": "heavy_water_separator:block/machine",
   "textures": {
-    "sides":"heavy_water_separator:block/dthws/side",
+    "sides":"heavy_water_separator:block/dthws/right",
     "front":"heavy_water_separator:block/dtwhs/front",
-    "west":"heavy_water_separator:block/dtwhs/side",
-    "east":"heavy_water_separator:block/dtwhs/side",
+    "west":"heavy_water_separator:block/dtwhs/right",
+    "east":"heavy_water_separator:block/dtwhs/left",
     "south":"heavy_water_separator:block/dtwhs/back",
     "up":"heavy_water_separator:block/dtwhs/top",
     "down":"heavy_water_separator:block/dtwhs/bottom"}
