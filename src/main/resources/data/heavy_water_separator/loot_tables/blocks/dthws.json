@@ -6,7 +6,24 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "heavy_water_separator:dthws"
+          "name": "heavy_water_separator:dthws",
+          "functions": [{
+            "function": "minecraft:copy_name",
+            "source": "block_entity"
+          },
+            {
+              "function": "minecraft:copy_nbt",
+              "source": "block_entity",
+              "ops": [
+                { "source": "InputTank",   "target": "BlockEntityTag.InputTank",   "op": "replace" },
+                { "source": "OutputTank",  "target": "BlockEntityTag.OutputTank",  "op": "replace" },
+                { "source": "Energy",      "target": "BlockEntityTag.Energy",      "op": "replace" },
+                { "source": "Upgrades",    "target": "BlockEntityTag.Upgrades",    "op": "replace" },
+                { "source": "SideConfigs", "target": "BlockEntityTag.SideConfigs", "op": "replace" },
+                { "source": "Progress",    "target": "BlockEntityTag.Progress",    "op": "replace" }
+              ]
+            }
+          ]
         }
       ],
       "conditions": [

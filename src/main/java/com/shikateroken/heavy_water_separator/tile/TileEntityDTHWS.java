@@ -37,13 +37,13 @@ import java.util.Map;
 
 
 public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
-    // 同期するデータをまとめる
+    // 同期するデータ
     protected final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> maxProgress; // キャッシュした最大時間
+                case 1 -> maxProgress; // キャッシュした加工時間
                 case 2 -> energyStorage.getEnergyStored();
                 case 3 -> energyStorage.getMaxEnergyStored();
                 case 4 -> inputTank.getFluidAmount();
@@ -66,9 +66,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
             switch (index) {
                 case 0 -> progress = value;
                 case 1 -> maxProgress = value;
-                case 2 -> { /* エネルギーはクライアント側でセット不要 */ }
-                case 3 -> {
-                }
+
             }
         }
 
@@ -130,7 +128,6 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
         return this.energyStorage;
     }
 
-
     //Fluid handler
     private final LazyOptional<IFluidHandler> inputHandler = LazyOptional.of(() -> inputTank);
     private final LazyOptional<IFluidHandler> outputHandler = LazyOptional.of(() -> outputTank);
@@ -162,9 +159,6 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
         SideConfig next = current.cycle();
         sideConfigs.put(side, next);
         setChanged(); // 保存フラグ
-
-        // クライアント同期用 (後で実装)
-        // level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
     // 現在の設定を取得
@@ -205,7 +199,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
 
         return super.getCapability(cap, side);
     }
-
+//Upgrade inventoryの定義
     public final ItemStackHandler upgradeInventory = new ItemStackHandler(2) {
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
@@ -220,7 +214,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
 
         @Override
         public int getSlotLimit(int slot) {
-            return 8; // Mekanismのアップグレードは最大8枚まで
+            return 8; //アップグレードは最大8枚まで
         }
 
         @Override
@@ -233,7 +227,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
     private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> upgradeInventory);
 
 
-    // 両方のハンドラーを無効化する ブロックが破壊されたりアンロードされた際にメモリリークを防ぐ
+    // 両方のハンドラーを無効化する
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
@@ -255,7 +249,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
         //Speed Upgradeの計算
         double speedMultiplier = Math.pow(10, speedCount / 8.0);
         //処理時間の計算
-        this.maxProgress = Math.max(1, (int) (baseTicks / (2 * speedMultiplier)));
+        this.maxProgress = Math.max(1, (int) (baseTicks / (2 * speedMultiplier)));//1と二つ目の引数どちらか大きいほうを返す
         // 消費電力を計算: 基本電力 * (速度倍率のさらに倍)
         // 10^(2*枚数/8)
         double energyMultiplier = Math.pow(10, (2 * speedCount) / 8.0);

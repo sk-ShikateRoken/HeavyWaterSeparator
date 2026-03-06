@@ -4,6 +4,7 @@ import com.shikateroken.heavy_water_separator.registry.HwsBlockEntity;
 import com.shikateroken.heavy_water_separator.registry.HwsBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -32,6 +33,7 @@ import javax.annotation.Nullable;
 public class TileDTHWS extends Block implements EntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT; // true = ON, false = OFF
+
     public TileDTHWS(Properties properties) {
         super(properties);
         // デフォルトの向きを「北」に設定
@@ -39,6 +41,7 @@ public class TileDTHWS extends Block implements EntityBlock {
                 .setValue(FACING, Direction.NORTH)
                 .setValue(LIT, false));
     }
+
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
@@ -70,7 +73,7 @@ public class TileDTHWS extends Block implements EntityBlock {
                 (lvl, pos, st, blockEntity) -> ((TileEntityDTHWS) blockEntity).tick());
     }
 
-    // Tickerの型合わせのためのヘルパーメソッド（Forge公式推奨の書き方）
+    // Tickerの型合わせのためのヘルパーメソッド
     @SuppressWarnings("unchecked")
     @Nullable
     protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> pServerType, BlockEntityType<E> pClientType, BlockEntityTicker<? super E> pTicker) {
@@ -109,5 +112,19 @@ public class TileDTHWS extends Block implements EntityBlock {
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    //クリエでピックブロック時に中身もコピーする
+    @Override
+    public ItemStack getCloneItemStack(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        BlockEntity tile = level.getBlockEntity(pos);
+        if (tile instanceof TileEntityDTHWS dthws) {
+            // NBTを作成してアイテムに保存
+            CompoundTag tag = dthws.saveWithoutMetadata();
+            // アイテムの "BlockEntityTag" に格納
+            stack.addTagElement("BlockEntityTag", tag);
+        }
+        return stack;
     }
 }
