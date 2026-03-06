@@ -24,7 +24,7 @@ public class DTHWSScreen extends AbstractContainerScreen<DTHWSMenu> {
     @Override
     protected void init() {
         super.init();
-        // 画面タイトルなどの位置調整が必要ならここに書く
+
     }
 
     // 1. 背景と「動くゲージ」の描画
@@ -41,13 +41,13 @@ public class DTHWSScreen extends AbstractContainerScreen<DTHWSMenu> {
         // 背景画像を描画
         graphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // --- ここからMekanism風のゲージ描画 ---
+        // ゲージ描画
 
         // 1. エネルギーバー (左端に配置)
         // データ取得
         int energy = this.menu.getEnergy();
         int maxEnergy = this.menu.getMaxEnergy();
-        // 高さ計算 (最大50pxとして計算)
+        // 高さ計算 (最大50px)
         int energyHeight = (maxEnergy > 0) ? (energy * 50 / maxEnergy) : 0;
 
         // 枠線(黒)と中身(緑)を描画
@@ -67,7 +67,7 @@ public class DTHWSScreen extends AbstractContainerScreen<DTHWSMenu> {
         int maxProgress = this.menu.getMaxProgress();
         int arrowWidth = (maxProgress > 0) ? (progress * 24 / maxProgress) : 0;
 
-        // 矢印の代わりに白い四角が伸びるようにする (画像がないため)
+        // 矢印の代わりに白い四角が伸びる
         graphics.fill(x + 78, y + 40, x + 78 + arrowWidth, y + 56, 0xFFFFFFFF);
 
         // 4. 出力タンク (右側に配置)
@@ -94,7 +94,7 @@ public class DTHWSScreen extends AbstractContainerScreen<DTHWSMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // エネルギーバーにカーソルがあったら
+        // 各バーにカーソルがあったら
         if (isHovering(8, 20, 10, 50, mouseX, mouseY)) {
             graphics.renderTooltip(font, Component.literal(this.menu.getEnergy() + " / " + this.menu.getMaxEnergy() + " FE"), mouseX, mouseY);
         }
