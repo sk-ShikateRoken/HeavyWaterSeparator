@@ -311,6 +311,8 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
             return;
         }
 
+        boolean isActive = false;//このTickに動いたか
+
         // 1. 入力タンクが空なら何もしない
         if (inputTank.isEmpty()) return;
 
@@ -345,6 +347,7 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
 
                 // 2. プログレス(処理時間)を1進める
                 progress++;
+                isActive = true;//動いたのでtrue
 
                 // 3. プログレスが目標値（完了）に達したかチェック
                 if (progress >= maxProgress) {
@@ -362,6 +365,16 @@ public class TileEntityDTHWS extends BlockEntity implements MenuProvider {
             }
         } else {
             progress = 0;
+        }
+        BlockState currentState = this.getBlockState();
+        // 現在のブロックがこのTileEntityのものか確認 (念のため)
+        if (currentState.getBlock() instanceof TileDTHWS) {
+            boolean currentLit = currentState.getValue(TileDTHWS.LIT);
+
+            // 状態が変わった時だけ更新する (毎Tick更新すると重くなるため)
+            if (currentLit != isActive) {
+                level.setBlock(worldPosition, currentState.setValue(TileDTHWS.LIT, isActive), 3);
+            }
         }
     }
 

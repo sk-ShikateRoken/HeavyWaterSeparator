@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle":"heavy_water_separator:block/dthws/side",
+    "north":"heavy_water_separator:block/dthws/front_on",
+    "west":"heavy_water_separator:block/dthws/side",
+    "east":"heavy_water_separator:block/dthws/side",
+    "south":"heavy_water_separator:block/dthws/back",
+    "up":"heavy_water_separator:block/dthws/top",
+    "down":"heavy_water_separator:block/dthws/bottom"}
+}
